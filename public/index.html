@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini Gantt Project Manager</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <label for="sidebar-toggle" class="sr-only">Buka daftar navigasi</label>
+  <input type="checkbox" id="sidebar-toggle" class="sidebar-toggle" />
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-dot"></span>
+      <span class="brand-text">Mini Gantt</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" data-panel="projects" class="nav-item active">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 10h18"/><path d="M9 15h6"/></svg>
+        <span>Proyek</span>
+      </a>
+      <a href="#" data-panel="calendar" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Kalender Kerja</span>
+      </a>
+      <a href="#" data-panel="tasks" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Tugas</span>
+      </a>
+      <a href="#" data-panel="gantt" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span>Gantt Chart</span>
+      </a>
+    </nav>
+    <div class="sidebar-actions">
+      <button id="btn-load-sample" class="btn btn-secondary btn-block">Muat Data Contoh (SDLC PT Xijet 30 Jun–31 Jul)</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="panel-title">Proyek</div>
+      <div class="topbar-status" id="topbar-status"></div>
+    </header>
+
+    <section class="panel" id="panel-projects">
+      <div class="card card-form">
+        <div class="card-head">
+          <h2>Buat Proyek Baru</h2>
+          <span class="hint">Isi data proyek di bawah ini</span>
+        </div>
+        <form id="form-project" autocomplete="off">
+          <div class="field">
+            <label for="p-name">Nama Proyek <span class="req">*</span></label>
+            <input id="p-name" name="name" type="text" placeholder="Contoh: SDLC PT Xijet" required />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="p-org">Organisasi</label>
+              <input id="p-org" name="organization" type="text" placeholder="PT Contoh" />
+            </div>
+            <div class="field">
+              <label for="p-web">Website</label>
+              <input id="p-web" name="website" type="url" placeholder="https://contoh.co.id" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="p-desc">Deskripsi</label>
+            <textarea id="p-desc" name="description" rows="3" placeholder="Ringkasan proyek..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="reset" class="btn btn-ghost">Reset</button>
+            <button type="submit" class="btn btn-primary">Simpan Proyek</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-head flex-between">
+          <div>
+            <h2>Daftar Proyek</h2>
+            <span class="hint" id="project-count"></span>
+          </div>
+          <div class="actions">
+            <button id="btn-refresh-projects" class="btn btn-ghost btn-sm" title="Muat ulang">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="table-projects">
+            <thead>
+              <tr>
+                <th class="col-id hide-mobile">No</th>
+                <th class="col-name">Nama Proyek</th>
+                <th class="col-org hide-mobile">Organisasi</th>
+                <th class="col-web wrap">Website</th>
+                <th class="col-desc wrap">Deskripsi</th>
+                <th class="col-actions align-end">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-projects"></tbody>
+          </table>
+          <div class="empty-state" id="empty-projects">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 10h18"/><path d="M9 15h6"/></svg>
+            <p>Belum ada proyek. Buat proyek baru untuk memulai.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="panel-calendar">
+      <div class="card card-form">
+        <div class="card-head">
+          <h2>Kalender Kerja</h2>
+          <span class="hint">Atur hari libur dan akhir pekan</span>
+        </div>
+        <div class="field">
+          <span class="label-inline">Akhir pekan libur</span>
+          <label class="toggle-row">
+            <input type="checkbox" id="chk-weekend" checked />
+            <span class="toggle">
+              <span class="toggle-knob"></span>
+              <span class="toggle-state">Aktif</span>
+            </span>
+            <span class="hint-small">Sabtu &amp; Minggu dianggap libur</span>
+          </label>
+        </div>
+
+        <div class="card sub-card">
+          <div class="card-head">
+            <h3>Tambah Hari Libur Custom</h3>
+            <span class="hint">Bisa sekali atau berulang tiap tahun</span>
+          </div>
+          <form id="form-holiday" autocomplete="off">
+            <div class="field-row">
+              <div class="field">
+                <label for="h-date">Tanggal <span class="req">*</span></label>
+                <input id="h-date" name="date" type="date" required />
+              </div>
+              <div class="field">
+                <label for="h-label">Label</label>
+                <input id="h-label" name="label" type="text" placeholder="Contoh: Hari Raya" />
+              </div>
+            </div>
+            <div class="field">
+              <span class="label-inline">Libur berulang tiap tahun</span>
+              <label class="toggle-row">
+                <input type="checkbox" id="h-recurring" />
+                <span class="toggle">
+                  <span class="toggle-knob"></span>
+                  <span class="toggle-state">Nonaktif</span>
+                </span>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Tambah Hari Libur</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head flex-between">
+            <div>
+              <h3>Daftar Hari Libur</h3>
+              <span class="hint" id="holiday-count"></span>
+            </div>
+            <div class="actions">
+              <button id="btn-refresh-holidays" class="btn btn-ghost btn-sm" title="Muat ulang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="table" id="table-holidays">
+              <thead>
+                <tr>
+                  <th class="col-id hide-mobile">No</th>
+                  <th class="col-name">Tanggal</th>
+                  <th class="col-name">Label</th>
+                  <th class="col-name wrap">Tipe</th>
+                  <th class="col-actions align-end">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-holidays"></tbody>
+            </table>
+            <div class="empty-state" id="empty-holidays">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <p>Belum ada hari libur custom. Akhir pekan otomatis libur.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="panel-tasks">
+      <div class="card card-form">
+        <div class="card-head">
+          <h2>Tambah Tugas</h2>
+          <span class="hint">Tugas bisa berdiri sendiri atau sub-tugas</span>
+        </div>
+        <form id="form-task" autocomplete="off">
+          <input type="hidden" id="t-id" />
+          <div class="field-row">
+            <div class="field grow">
+              <label for="t-name">Nama Tugas <span class="req">*</span></label>
+              <input id="t-name" name="name" type="text" placeholder="Contoh: Analisis Kebutuhan" required />
+            </div>
+            <div class="field">
+              <label for="t-project">Proyek</label>
+              <select id="t-project" name="project_id">
+                <option value="">— Tanpa proyek —</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="t-start">Tgl Mulai <span class="req">*</span></label>
+              <input id="t-start" name="start_date" type="date" required />
+            </div>
+            <div class="field">
+              <label for="t-dur">Durasi (hari kerja)</label>
+              <input id="t-dur" name="duration_days" type="number" min="1" step="1" value="1" />
+            </div>
+            <div class="field">
+              <label for="t-prio">Prioritas</label>
+              <select id="t-prio" name="priority">
+                <option value="3">Tinggi</option>
+                <option value="2" selected>Sedang</option>
+                <option value="1">Rendah</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="t-color">Warna</label>
+              <div class="color-picker-row">
+                <input id="t-color" name="color" type="text" value="#4A90D9" maxlength="7" />
+                <input id="t-color-swatch" type="color" value="#4A90D9" class="color-swatch" />
+              </div>
+            </div>
+            <div class="field">
+              <label for="t-parent">Sub-tugas dari</label>
+              <select id="t-parent" name="parent_id">
+                <option value="">— Tugas utama —</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" id="btn-clear-task" class="btn btn-ghost">Bersihkan</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-task">Simpan Tugas</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-head flex-between">
+          <div>
+            <h2>Daftar Tugas</h2>
+            <span class="hint" id="task-count"></span>
+          </div>
+          <div class="actions">
+            <select id="filter-project" class="select-sm">
+              <option value="">Semua proyek</option>
+            </select>
+            <button id="btn-refresh-tasks" class="btn btn-ghost btn-sm" title="Muat ulang">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="table-tasks">
+            <thead>
+              <tr>
+                <th class="col-id hide-mobile">No</th>
+                <th class="col-name">Nama Tugas</th>
+                <th class="col-date">Tgl Mulai</th>
+                <th class="col-num">Durasi (hari)</th>
+                <th class="col-prio">Prioritas</th>
+                <th class="col-color">Warna</th>
+                <th class="col-parent wrap hide-mobile">Induk</th>
+                <th class="col-actions align-end">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-tasks"></tbody>
+          </table>
+          <div class="empty-state" id="empty-tasks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <p>Belum ada tugas. Tambah tugas baru untuk mulai memetakan.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="panel-gantt">
+      <div class="gantt-toolbar card">
+        <div class="field-row">
+          <div class="field grow">
+            <label>Filter proyek</label>
+            <select id="gantt-project" class="select">
+              <option value="">Semua proyek</option>
+            </select>
+          </div>
+          <div class="field">
+            <button id="btn-zoom-out" class="btn btn-ghost btn-sm" title="Zoom keluar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              Zoom -
+            </button>
+          </div>
+          <div class="field">
+            <button id="btn-zoom-in" class="btn btn-ghost btn-sm" title="Zoom masuk">
+              Zoom +
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </button>
+          </div>
+          <div class="field">
+            <span class="label-inline">Lebar kolom nama</span>
+            <input id="gantt-name-width" type="range" min="120" max="400" value="220" class="range-sm" />
+          </div>
+        </div>
+      </div>
+
+      <div class="gantt-wrap card">
+        <div id="gantt-scroll" class="gantt-scroll">
+          <div id="gantt-container" class="gantt-container">
+            <div id="gantt-left" class="gantt-left"></div>
+            <div class="gantt-right-wrap">
+              <div class="gantt-header-days" id="gantt-header-days"></div>
+              <div class="gantt-body" id="gantt-body">
+                <div id="gantt-grid" class="gantt-grid"></div>
+                <div id="gantt-bars" class="gantt-bars"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" id="empty-gantt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <p>Belum ada tugas untuk ditampilkan di Gantt. Buat proyek dan tugas terlebih dahulu, atau muat data contoh.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
